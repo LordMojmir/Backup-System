@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net7.0-windows</TargetFramework>
+        <RootNamespace>BackUP_System</RootNamespace>
+        <Nullable>enable</Nullable>
+        <UseWPF>true</UseWPF>
+        <UseWindowsForms>True</UseWindowsForms>
+    </PropertyGroup>
+
+
+    <ItemGroup>
+      <PackageReference Include="MailKit" Version="4.2.0" />
+      <PackageReference Include="Microsoft.Windows.Compatibility" Version="8.0.0-rc.2.23479.10" />
+    </ItemGroup>
+
+
+
+
+    <ItemGroup>
+      <None Update="timemachine_icon-icons.com_75766.ico">
+        <DependentUpon>MainWindow.xaml</DependentUpon>
+      </None>
+    </ItemGroup>
+
+</Project>
