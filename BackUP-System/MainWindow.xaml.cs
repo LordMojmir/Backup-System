@@ -64,7 +64,7 @@ namespace BackUP_System
         private void BrowseDestination_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new WinForms.FolderBrowserDialog();
-            dialog.InitialDirectory = "M:\\";
+            dialog.InitialDirectory = "D:\\Backup-AKMH";
             
             WinForms.DialogResult result = dialog.ShowDialog();
             if (result == WinForms.DialogResult.OK)

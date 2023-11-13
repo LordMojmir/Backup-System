@@ -1,4 +1,3 @@
-
 using System;
 using System.IO;
 using System.IO.Compression;
@@ -16,7 +15,7 @@ namespace BackUP_System.Model
             this.baseToDirectory = baseToDirectory;
         }
 
-        public string PerformBackup( bool shouldCompress)
+        public string PerformBackup(bool shouldCompress)
         {
             try
             {
@@ -24,8 +23,8 @@ namespace BackUP_System.Model
                 {
                     return "Source directory does not exist.";
                 }
-             
-                    string toDirectory = baseToDirectory;
+
+                string toDirectory = baseToDirectory;
                 
                 if (!Directory.Exists(toDirectory))
                 {
@@ -36,9 +35,11 @@ namespace BackUP_System.Model
 
                 if (shouldCompress)
                 {
-
                     string zipFilePath = toDirectory + ".zip";
                     CompressToZip(toDirectory, zipFilePath);
+
+                    // Delete the original uncompressed backup after creating the zip file
+                    DeleteDirectory(toDirectory);
 
                     return "Backup and compression completed successfully. ZIP file created at: " + zipFilePath;
                 }
@@ -53,7 +54,6 @@ namespace BackUP_System.Model
 
         private void CopyFilesRecursively(string sourcePath, string targetPath)
         {
-            // Copy each file into the new directory.
             foreach (string filePath in Directory.GetFiles(sourcePath))
             {
                 string fileName = Path.GetFileName(filePath);
@@ -61,7 +61,6 @@ namespace BackUP_System.Model
                 File.Copy(filePath, destFile, true);
             }
 
-            // Copy each subdirectory using recursion.
             foreach (string directoryPath in Directory.GetDirectories(sourcePath))
             {
                 string directoryName = Path.GetFileName(directoryPath);
@@ -78,9 +77,18 @@ namespace BackUP_System.Model
         {
             if (File.Exists(zipFilePath))
             {
-                File.Delete(zipFilePath); // Overwrite existing ZIP file
+                File.Delete(zipFilePath);
             }
             ZipFile.CreateFromDirectory(sourceDirectory, zipFilePath);
+        }
+        
+
+        private void DeleteDirectory(string path)
+        {
+            if (Directory.Exists(path))
+            {
+                Directory.Delete(path, true); 
+            }
         }
     }
 }
