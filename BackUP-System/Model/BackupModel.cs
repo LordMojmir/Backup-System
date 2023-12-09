@@ -98,11 +98,9 @@ namespace BackUP_System.Model
             #region Backup Files
             FileBackup fb = new(SourceDirectory, fileBackupDirectory);
 
-            if (secureSave)
-            {
-                Console.WriteLine(fb.PerformBackup(true));
-                // compress_directory(toDirectory);
-            }
+            
+            Console.WriteLine(fb.PerformBackup(secureSave));
+             
             
             #endregion
 
