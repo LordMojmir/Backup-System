@@ -81,7 +81,7 @@ namespace BackUP_System.Model
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        public bool makeBackup()
+        public bool makeBackup( )
         {
 
             
@@ -100,8 +100,8 @@ namespace BackUP_System.Model
 
             if (secureSave)
             {
-                Console.WriteLine(fb.PerformBackup(false));
-                compress_directory(toDirectory);
+                Console.WriteLine(fb.PerformBackup(true));
+                // compress_directory(toDirectory);
             }
             
             #endregion
@@ -126,14 +126,14 @@ namespace BackUP_System.Model
             #endregion
         }
 
-        public bool makeBackup(TextBlock errorMessageBlock)
+        public bool makeBacku_old(TextBlock errorMessageBlock)
         {
             string dateFolder = DateTime.Now.ToString("yyMMdd") + "_BackUP";
             string destinationPath = DestinationDirectory;
             string toDirectory = Path.Combine(destinationPath, dateFolder);
         
-            string mailBackupDirectory = Path.Combine(toDirectory, "MailBackups");
             string fileBackupDirectory = Path.Combine(toDirectory, "FileBackups");
+            string mailBackupDirectory = Path.Combine(toDirectory, "MailBackups");
               
             Directory.CreateDirectory(mailBackupDirectory);
             Directory.CreateDirectory(fileBackupDirectory);
@@ -172,11 +172,12 @@ namespace BackUP_System.Model
             
         }
         
+        
         private void CompressToZip(string sourceDirectory, string zipFilePath)
         {
             if (File.Exists(zipFilePath))
             {
-                File.Delete(zipFilePath); // Overwrite existing ZIP file
+                File.Delete(zipFilePath); // Delete existing zip file
             }
             ZipFile.CreateFromDirectory(sourceDirectory, zipFilePath);
         }

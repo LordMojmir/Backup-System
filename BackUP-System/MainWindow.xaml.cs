@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
 using BackUP_System.Model;
@@ -97,67 +98,77 @@ namespace BackUP_System
                 // Update the TextBlock within the ToggleButton to show an "eye" icon
                 ((TextBlock)TogglePasswordVisibility.Content).Text = "\uE722"; // Unicode for eye icon, replace with actual icon if available
             }
-        }
+        } 
         private async void StartBackup_Click(object sender, RoutedEventArgs e)
-{
-    // Disable the start backup button to prevent multiple clicks
-    ((Button)sender).IsEnabled = false;
-
-    // Show the progress bar
-    progressBar.Visibility = Visibility.Visible;
-
-    // Reset the error message block
-    errorMessageBlock.Visibility = Visibility.Collapsed;
-    errorMessageBlock.Text = string.Empty;
-
-    // Set up the backup configuration
-    bool checkBoxZip = toZip.IsChecked ?? false;
-    BackupModel.SecureSave = checkBoxZip;
-    BackupModel.Username = mailAddress.Text;
-    BackupModel.Password = mailPassword.Password;
-
-    try
-    {
-        // Run the backup operation on a background thread
-        bool success = await Task.Run(() => BackupModel.makeBackup());
-
-        // Once the backup is finished, update the UI accordingly on the UI thread
-        Dispatcher.Invoke(() =>
         {
-            if (success)
+            // Disable the start backup button to prevent multiple clicks
+            ((Button)sender).IsEnabled = false;
+
+            // Show the progress bar
+            progressBar.Visibility = Visibility.Visible;
+
+            // Reset the error message block
+            errorMessageBlock.Visibility = Visibility.Collapsed;
+            errorMessageBlock.Text = string.Empty;
+
+            // Set up the backup configuration
+            bool checkBoxZip = toZip.IsChecked ?? false;
+            BackupModel.SecureSave = checkBoxZip;
+            BackupModel.Username = mailAddress.Text;
+            BackupModel.Password = mailPassword.Password;
+
+            try
             {
-                errorMessageBlock.Text = $"Mail and Files successfully saved in: {BackupModel.DestinationDirectory}";
-                errorMessageBlock.Foreground = new SolidColorBrush(Colors.Green);
+                // Run the backup operation on a background thread
+
+                long directorySize = CalculateDirectorySize(BackupModel.SourceDirectory);
+                Console.WriteLine($"Total size of the directory to backup: {directorySize} bytes");
+
+                // Estimate backup time
+                string estimatedTime = EstimateBackupTime(directorySize);
+                Console.WriteLine($"Estimated backup time: {estimatedTime} (hh:mm:ss)");
+                estimatedTimeTextBlock.Text = estimatedTime;
+
+                bool success = await Task.Run(() => BackupModel.makeBackup());
+
+                
+                // Once the backup is finished, update the UI accordingly on the UI thread
+                Dispatcher.Invoke(() =>
+                {
+                    if (success)
+                    {
+                        errorMessageBlock.Text = $"Mail and Files successfully saved in: {BackupModel.DestinationDirectory}";
+                        errorMessageBlock.Foreground = new SolidColorBrush(Colors.Green);
+                    }
+                    else
+                    {
+                        // Handle the case where backup is not successful
+                        errorMessageBlock.Text = "Backup failed. Please check the logs for details.";
+                        errorMessageBlock.Foreground = new SolidColorBrush(Colors.Red);
+                    }
+                    errorMessageBlock.Visibility = Visibility.Visible;
+                });
             }
-            else
+            catch (Exception exception)
             {
-                // Handle the case where backup is not successful
-                errorMessageBlock.Text = "Backup failed. Please check the logs for details.";
-                errorMessageBlock.Foreground = new SolidColorBrush(Colors.Red);
+                // If an exception was thrown, display the error message
+                Dispatcher.Invoke(() =>
+                {
+                    errorMessageBlock.Text = exception.Message;
+                    errorMessageBlock.Foreground = new SolidColorBrush(Colors.Red);
+                    errorMessageBlock.Visibility = Visibility.Visible;
+                });
             }
-            errorMessageBlock.Visibility = Visibility.Visible;
-        });
-    }
-    catch (Exception exception)
-    {
-        // If an exception was thrown, display the error message
-        Dispatcher.Invoke(() =>
-        {
-            errorMessageBlock.Text = exception.Message;
-            errorMessageBlock.Foreground = new SolidColorBrush(Colors.Red);
-            errorMessageBlock.Visibility = Visibility.Visible;
-        });
-    }
-    finally
-    {
-        // Hide the progress bar and re-enable the start backup button
-        Dispatcher.Invoke(() =>
-        {
-            progressBar.Visibility = Visibility.Collapsed;
-            ((Button)sender).IsEnabled = true;
-        });
-    }
-}
+            finally
+            {
+                // Hide the progress bar and re-enable the start backup button
+                Dispatcher.Invoke(() =>
+                {
+                    progressBar.Visibility = Visibility.Collapsed;
+                    ((Button)sender).IsEnabled = true;
+                });
+            }
+        }
 
         
         private void StartWork()
@@ -173,6 +184,34 @@ namespace BackUP_System
             progressBar.Visibility = Visibility.Collapsed; // Hide the progress bar
         }
 
+        private long CalculateDirectorySize(string path)
+        {
+            long size = 0;
+            DirectoryInfo di = new DirectoryInfo(path);
+
+            // Calculate size for all files in the directory
+            foreach (FileInfo file in di.GetFiles())
+            {
+                size += file.Length;
+            }
+
+            // Recursively calculate size for each subdirectory
+            foreach (DirectoryInfo subdir in di.GetDirectories())
+            {
+                size += CalculateDirectorySize(subdir.FullName);
+            }
+
+            return size;
+        }
+
+
+        private string EstimateBackupTime(long sizeInBytes)
+        {
+            double averageTransferRate = 50000000; // Example: 50 MB/s
+            double timeInSeconds = (sizeInBytes / averageTransferRate); // Time in seconds
+
+            TimeSpan time = TimeSpan.FromSeconds(timeInSeconds);
+            return time.ToString(@"hh\:mm\:ss");        }
 
         
     }
